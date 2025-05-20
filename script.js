@@ -118,7 +118,7 @@ function guardarEnGoogleSheets() {
     };
     
     // URL del script de Google Apps Script que procesará los datos
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwgvctREqGUExSeI2_jd61xM41DQEVS';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwgvctREqGUExSel2_jd61xM41DQEVSJ5uRxAJDw8BFh1dnUxUOKDRfT7yYowAAcdu3pQ/exec';
     
     // Mostrar mensaje de carga
     document.getElementById('success-message').textContent = 'Guardando datos...';
