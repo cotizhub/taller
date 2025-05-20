@@ -6,6 +6,7 @@
     <title>Sistema de Cotizaciones</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -124,8 +125,18 @@
 
                     <div class="d-flex justify-content-between mt-4">
                         <button type="button" class="btn btn-secondary" id="btn-limpiar">Limpiar</button>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary">Guardar Cotización</button>
+                            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" id="btn-google-sheets">Guardar en Google Sheets</a></li>
+                                <li><a class="dropdown-item" href="#" id="btn-csv">Exportar CSV y enviar por correo</a></li>
+                                <li><a class="dropdown-item" href="#" id="btn-json">Exportar JSON y enviar por correo</a></li>
+                            </ul>
+                        </div>
                         <div>
-                            <button type="submit" class="btn btn-primary me-2">Guardar Cotización</button>
                             <button type="button" class="btn btn-success me-2" id="btn-pdf">Descargar PDF</button>
                             <button type="button" class="btn btn-success" id="btn-whatsapp">
                                 <i class="bi bi-whatsapp"></i> Enviar por WhatsApp
@@ -133,6 +144,33 @@
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+        
+        <!-- Instrucciones para Google Sheets -->
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Configuración de Google Sheets</h4>
+            </div>
+            <div class="card-body">
+                <p>Para habilitar la integración con Google Sheets, sigue estos pasos:</p>
+                <ol>
+                    <li>Crea una nueva hoja de cálculo en Google Sheets</li>
+                    <li>Haz clic en Extensiones > Apps Script</li>
+                    <li>Copia y pega el código proporcionado en el archivo README.md</li>
+                    <li>Guarda el script y haz clic en Implementar > Nueva implementación</li>
+                    <li>Selecciona "Aplicación web" como tipo</li>
+                    <li>Configura el acceso como "Cualquier persona" y haz clic en Implementar</li>
+                    <li>Copia la URL de la aplicación web que se genera</li>
+                    <li>Pégala en el campo a continuación:</li>
+                </ol>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="google-sheets-url" placeholder="Pega aquí la URL de Google Apps Script">
+                    <button class="btn btn-outline-primary" type="button" id="btn-guardar-url">Guardar URL</button>
+                </div>
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle-fill"></i> La URL se guardará localmente en tu navegador. Si cambias de dispositivo o navegador, deberás configurarla nuevamente.
+                </div>
             </div>
         </div>
     </div>
@@ -160,5 +198,101 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="script.js"></script>
+    <script src="pdf-generator.js"></script>
+    <script src="export-functions.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar URL de Google Sheets guardada
+            const savedUrl = localStorage.getItem('googleSheetsUrl');
+            if (savedUrl) {
+                document.getElementById('google-sheets-url').value = savedUrl;
+            }
+            
+            // Guardar URL de Google Sheets
+            document.getElementById('btn-guardar-url').addEventListener('click', function() {
+                const url = document.getElementById('google-sheets-url').value.trim();
+                if (url) {
+                    localStorage.setItem('googleSheetsUrl', url);
+                    document.getElementById('success-message').textContent = 'URL de Google Sheets guardada correctamente.';
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                } else {
+                    alert('Por favor ingresa una URL válida.');
+                }
+            });
+            
+            // Configurar eventos para los botones de exportación
+            document.getElementById('btn-google-sheets').addEventListener('click', function(e) {
+                e.preventDefault();
+                guardarEnGoogleSheets();
+            });
+            
+            document.getElementById('btn-csv').addEventListener('click', function(e) {
+                e.preventDefault();
+                exportarCSVyEnviar();
+            });
+            
+            document.getElementById('btn-json').addEventListener('click', function(e) {
+                e.preventDefault();
+                exportarJSONyEnviar();
+            });
+            
+            // Modificar la función guardarEnGoogleSheets para usar la URL guardada
+            window.guardarEnGoogleSheets = function() {
+                // Verificar que el formulario esté completo
+                if (!validarFormulario()) {
+                    alert('Por favor complete todos los campos requeridos antes de guardar.');
+                    return;
+                }
+                
+                // Obtener la URL guardada
+                const scriptURL = localStorage.getItem('googleSheetsUrl');
+                if (!scriptURL) {
+                    document.getElementById('success-message').textContent = 'Por favor configura la URL de Google Sheets primero.';
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                    return;
+                }
+                
+                // Recopilar datos del formulario
+                const formData = {
+                    folio: currentFolio,
+                    fecha: document.getElementById('fecha-cotizacion').value,
+                    empresa: document.getElementById('empresa').value,
+                    marcaAuto: document.getElementById('marca-auto').value,
+                    placas: document.getElementById('placas').value,
+                    tipoServicio: document.getElementById('tipo-servicio').value,
+                    fechaEntrega: document.getElementById('fecha-entrega').value,
+                    descripcion: document.getElementById('descripcion').value,
+                    cantidad: document.getElementById('cantidad').value,
+                    importeTrabajo: document.getElementById('importe-trabajo').value,
+                    importeManoObra: document.getElementById('importe-mano-obra').value,
+                    subtotal: document.getElementById('subtotal').value,
+                    iva: document.getElementById('iva').value,
+                    total: document.getElementById('total').value
+                };
+                
+                // Mostrar mensaje de carga
+                document.getElementById('success-message').textContent = 'Guardando datos en Google Sheets...';
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+                
+                // Enviar datos a Google Sheets
+                fetch(scriptURL, {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    document.getElementById('success-message').textContent = '¡Cotización guardada con éxito en Google Sheets!';
+                })
+                .catch(error => {
+                    document.getElementById('success-message').textContent = 'Error al guardar: ' + error.message;
+                });
+                
+                // Guardar localmente para PDF y WhatsApp
+                localStorage.setItem('ultimaCotizacion', JSON.stringify(formData));
+            };
+        });
+    </script>
 </body>
 </html>
