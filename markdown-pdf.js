@@ -24,7 +24,7 @@ function generarMarkdownCotizacion() {
     
     // Crear contenido Markdown
     const markdown = `
-# COTIZACIÓN: ${folio}
+#### COTIZACIÓN: ${folio}
 
 <div style="text-align: right; font-size: 12px;">
 ${new Date().toLocaleString('es-MX')}
@@ -34,7 +34,7 @@ ${new Date().toLocaleString('es-MX')}
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
 <div style="width: 40%;">
-<img src="logo-placeholder.png" alt="Logo Taller Félix" style="max-width: 150px;">
+<img src="logo-placeholder.png" alt="Logo Taller Félix" style="max-width: 250px;">
 </div>
 <div style="width: 30%; text-align: center;">
 <div style="font-weight: bold; font-size: 14px;">FEMP920506-8N3</div>
@@ -73,20 +73,12 @@ Por este conducto, **Taller Félix**, le agradecemos la oportunidad que nos brin
 
 Esperando cumpla con sus requerimientos, se le presenta a continuación la descripción del trabajo y el costo de nuestros servicios:
 
-| # | Automóvil | Placas | Cantidad | Descripción del trabajo | Fecha probable de entrega |
-|:---:|:---|:---:|:---:|:---|:---:|
-| 1 | ${marcaAuto} | ${placas} | ${cantidad} | ${descripcion} | ${fechaEntrega} |
+| Automóvil | Placas | Descripción del trabajo | Fecha probable de entrega |
+|:---|:---:|:---|:---:|
+| ${marcaAuto} | ${placas} | ${descripcion} | ${fechaEntrega} |
 
 <div style="display: flex; justify-content: flex-end; margin-top: 30px;">
 <table style="width: 50%;">
-<tr>
-<td style="text-align: right; padding: 8px;"><strong>Importe del trabajo:</strong></td>
-<td style="text-align: right; padding: 8px;">$${importeTrabajo}</td>
-</tr>
-<tr>
-<td style="text-align: right; padding: 8px;"><strong>Importe mano de obra:</strong></td>
-<td style="text-align: right; padding: 8px;">$${importeManoObra}</td>
-</tr>
 <tr>
 <td style="text-align: right; padding: 8px;"><strong>Subtotal:</strong></td>
 <td style="text-align: right; padding: 8px;">$${subtotal}</td>
@@ -112,6 +104,32 @@ Esta cotización tiene una vigencia de 15 días a partir de la fecha de emisión
     return markdown;
 }
 
+// Función para descargar el contenido Markdown
+function descargarMarkdown() {
+    // Generar el contenido Markdown
+    const markdownContent = generarMarkdownCotizacion();
+    if (!markdownContent) return;
+    
+    // Crear blob y descargar archivo Markdown
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+    const mdFileName = `Cotizacion_${currentFolio}.md`;
+    
+    // Crear link para descargar
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', mdFileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Mostrar mensaje de éxito
+    document.getElementById('success-message').textContent = 'Archivo Markdown generado y descargado correctamente.';
+    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    successModal.show();
+}
+
 // Función para generar PDF a partir de Markdown
 function generarPDF() {
     // Generar el contenido Markdown
@@ -125,9 +143,7 @@ function generarPDF() {
     tempDiv.style.backgroundColor = '#ffffff';
     tempDiv.style.fontFamily = 'Arial, sans-serif';
     
-    // Convertir Markdown a HTML (usando una librería simple)
-    // Como no tenemos una librería de Markdown cargada, usaremos un enfoque básico
-    // En una implementación real, se usaría marked.js o similar
+    // Convertir Markdown a HTML (usando un enfoque básico)
     const htmlContent = markdownToHTML(markdownContent);
     tempDiv.innerHTML = htmlContent;
     

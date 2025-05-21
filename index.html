@@ -132,7 +132,7 @@
                             </button>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="#" id="btn-csv">Exportar CSV y enviar por correo</a></li>
-                                <li><a class="dropdown-item" href="#" id="btn-json">Exportar JSON y enviar por correo</a></li>
+                                <li><a class="dropdown-item" href="#" id="btn-markdown">Descargar Markdown</a></li>
                             </ul>
                         </div>
                         <div>
@@ -172,5 +172,14 @@
     <script src="script.js"></script>
     <script src="markdown-pdf.js"></script>
     <script src="export-functions.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar evento para el botón de Markdown
+            document.getElementById('btn-markdown').addEventListener('click', function(e) {
+                e.preventDefault();
+                descargarMarkdown();
+            });
+        });
+    </script>
 </body>
 </html>
