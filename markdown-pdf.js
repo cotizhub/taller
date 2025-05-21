@@ -22,9 +22,9 @@ function generarMarkdownCotizacion() {
     const iva = document.getElementById('iva').value;
     const total = document.getElementById('total').value;
     
-    // Crear contenido Markdown
+    // Crear contenido Markdown con HTML para la tabla
     const markdown = `
-#### COTIZACIÓN: ${folio}
+# COTIZACIÓN: ${folio}
 
 <div style="text-align: right; font-size: 12px;">
 ${new Date().toLocaleString('es-MX')}
@@ -34,7 +34,7 @@ ${new Date().toLocaleString('es-MX')}
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
 <div style="width: 40%;">
-<img src="logo-placeholder.png" alt="Logo Taller Félix" style="max-width: 250px;">
+<img src="logo-placeholder.png" alt="Logo Taller Félix" style="max-width: 150px;">
 </div>
 <div style="width: 30%; text-align: center;">
 <div style="font-weight: bold; font-size: 14px;">FEMP920506-8N3</div>
@@ -73,9 +73,24 @@ Por este conducto, **Taller Félix**, le agradecemos la oportunidad que nos brin
 
 Esperando cumpla con sus requerimientos, se le presenta a continuación la descripción del trabajo y el costo de nuestros servicios:
 
-| Automóvil | Placas | Descripción del trabajo | Fecha probable de entrega |
-|:---|:---:|:---|:---:|
-| ${marcaAuto} | ${placas} | ${descripcion} | ${fechaEntrega} |
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+  <thead>
+    <tr style="background-color: #3498db; color: white;">
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Automóvil</th>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Placas</th>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descripción del trabajo</th>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Fecha probable de entrega</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 8px;">${marcaAuto}</td>
+      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${placas}</td>
+      <td style="border: 1px solid #ddd; padding: 8px;">${descripcion}</td>
+      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${fechaEntrega}</td>
+    </tr>
+  </tbody>
+</table>
 
 <div style="display: flex; justify-content: flex-end; margin-top: 30px;">
 <table style="width: 50%;">
@@ -143,9 +158,9 @@ function generarPDF() {
     tempDiv.style.backgroundColor = '#ffffff';
     tempDiv.style.fontFamily = 'Arial, sans-serif';
     
-    // Convertir Markdown a HTML (usando un enfoque básico)
-    const htmlContent = markdownToHTML(markdownContent);
-    tempDiv.innerHTML = htmlContent;
+    // Usar el contenido Markdown directamente como HTML
+    // Ya que nuestro Markdown contiene HTML para las tablas
+    tempDiv.innerHTML = markdownContent;
     
     // Añadir estilos específicos para impresión
     const style = document.createElement('style');
@@ -192,29 +207,4 @@ function generarPDF() {
         // Eliminar el elemento temporal
         document.body.removeChild(tempDiv);
     });
-}
-
-// Función simple para convertir Markdown a HTML
-function markdownToHTML(markdown) {
-    let html = markdown;
-    
-    // Convertir encabezados
-    html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
-    html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
-    html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
-    
-    // Convertir énfasis
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    // Convertir líneas horizontales
-    html = html.replace(/^---$/gm, '<hr>');
-    
-    // Convertir párrafos (líneas que no son encabezados, listas, etc.)
-    html = html.replace(/^(?!<h|<ul|<ol|<li|<table|<div|<p)([^\n]+)$/gm, '<p>$1</p>');
-    
-    // Preservar etiquetas HTML y estilos
-    // No hacemos nada aquí, ya que queremos mantener las etiquetas HTML intactas
-    
-    return html;
 }
